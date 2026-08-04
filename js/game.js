@@ -246,6 +246,13 @@ const Game = (() => {
       if (e.key === "Enter") checkAnswer();
     });
 
+    // Скролл к картинке при фокусе на поле ввода (фикс клавиатуры на мобильных)
+    document.getElementById("answer-input").addEventListener("focus", () => {
+      setTimeout(() => {
+        document.getElementById("game-image-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    });
+
     // Кнопки в топ-баре
     document.getElementById("btn-settings").addEventListener("click", () => {
       App.showScreen("settings");
