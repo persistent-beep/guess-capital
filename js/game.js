@@ -169,7 +169,7 @@ const Game = (() => {
       // Правильный ответ
       input.classList.add("correct");
       feedback.className = "game-feedback show correct";
-      feedback.textContent = "✅ Правильно!";
+      feedback.textContent = `✅ Правильно! Ответ: ${currentQuestion.target.name}`;
       wrap.classList.add("flip-success", "glow-success");
       setTimeout(() => wrap.classList.remove("flip-success", "glow-success"), 800);
 
