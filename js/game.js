@@ -95,8 +95,17 @@ const Game = (() => {
     // Картинка
     const wrap = document.getElementById("game-image-wrap");
     wrap.className = "game-image-wrap slide-in-right";
+    // Fallback для флагов: локальный файл → flagcdn.com → заглушка
+    const flagFallback = q.hintType === "flag"
+      ? `https://flagcdn.com/${q.country.code}.svg`
+      : "";
+
+    const onerrorHandler = flagFallback
+      ? `if(!this.dataset.fb){this.dataset.fb='1';this.src='${flagFallback}';}else{this.style.display='none';this.parentElement.querySelector('.game-image-placeholder').style.display='flex';}`
+      : `this.style.display='none';this.parentElement.querySelector('.game-image-placeholder').style.display='flex';`;
+
     wrap.innerHTML = `
-      <img src="${q.imagePath}" alt="Подсказка" onerror="this.style.display='none';this.parentElement.querySelector('.game-image-placeholder').style.display='flex';">
+      <img src="${q.imagePath}" alt="Подсказка" onerror="${onerrorHandler}">
       <div class="game-image-placeholder" style="display:none;flex-direction:column;gap:8px;align-items:center;">
         <span style="font-size:48px;">${q.hintType === "flag" ? "🏳️" : q.hintType === "borders" ? "🗺️" : "🏙️"}</span>
         <span style="font-size:13px;color:var(--text-light);">Изображение скоро появится</span>
