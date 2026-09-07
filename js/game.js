@@ -92,25 +92,46 @@ const Game = (() => {
     currentQuestion = q;
     answered = false;
 
-    // Картинка
     const wrap = document.getElementById("game-image-wrap");
     wrap.className = "game-image-wrap slide-in-right";
-    // Fallback для флагов: локальный файл → flagcdn.com → заглушка
-    const flagFallback = q.hintType === "flag"
-      ? `https://flagcdn.com/${q.country.code}.svg`
-      : "";
 
-    const onerrorHandler = flagFallback
-      ? `if(!this.dataset.fb){this.dataset.fb='1';this.src='${flagFallback}';}else{this.style.display='none';this.parentElement.querySelector('.game-image-placeholder').style.display='flex';}`
-      : `this.style.display='none';this.parentElement.querySelector('.game-image-placeholder').style.display='flex';`;
+    const placeholderHTML = (icon, text) => `
+      <div class="game-image-placeholder" style="display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;">
+        <span style="font-size:48px;">${icon}</span>
+        <span style="font-size:13px;color:var(--text-light);">${text}</span>
+      </div>`;
 
-    wrap.innerHTML = `
-      <img src="${q.imagePath}" alt="Подсказка" onerror="${onerrorHandler}">
-      <div class="game-image-placeholder" style="display:none;flex-direction:column;gap:8px;align-items:center;">
-        <span style="font-size:48px;">${q.hintType === "flag" ? "🏳️" : q.hintType === "borders" ? "🗺️" : "🏙️"}</span>
-        <span style="font-size:13px;color:var(--text-light);">Изображение скоро появится</span>
-      </div>
-    `;
+    if (q.hintType === "borders") {
+      // Силуэт страны строим из assets/world.svg
+      wrap.innerHTML = placeholderHTML("🗺️", "Загрузка карты…");
+      MapRenderer.getCountrySVG(q.country.code).then((svg) => {
+        if (currentQuestion !== q) return; // вопрос уже сменился
+        if (svg) {
+          wrap.innerHTML = svg;
+        } else {
+          wrap.innerHTML = placeholderHTML("🗺️", "Изображение скоро появится");
+        }
+      });
+
+    } else if (q.hintType === "capital") {
+      // Фото столицы: локальный файл → Википедия → заглушка
+      wrap.innerHTML = placeholderHTML("🏙️", "Загрузка фото…");
+      showCapitalPhoto(q, wrap);
+
+    } else {
+      // Флаг: локальный файл → flagcdn → заглушка (как раньше)
+      const flagFallback = `https://flagcdn.com/${q.country.code}.svg`;
+      const onerrorHandler =
+        `if(!this.dataset.fb){this.dataset.fb='1';this.src='${flagFallback}';}` +
+        `else{this.style.display='none';this.parentElement.querySelector('.game-image-placeholder').style.display='flex';}`;
+      wrap.innerHTML = `
+        <img src="${q.imagePath}" alt="Подсказка" onerror="${onerrorHandler}">
+        <div class="game-image-placeholder" style="display:none;flex-direction:column;gap:8px;align-items:center;">
+          <span style="font-size:48px;">🏳️</span>
+          <span style="font-size:13px;color:var(--text-light);">Изображение скоро появится</span>
+        </div>
+      `;
+    }
 
     // Метка задачи
     document.getElementById("task-label").textContent = q.taskLabel;
@@ -130,6 +151,29 @@ const Game = (() => {
     document.getElementById("game-feedback").textContent = "";
     document.getElementById("btn-skip").style.display = "";
     document.getElementById("btn-next").style.display = "none";
+  }
+
+  // --- Фото столицы: сначала локальный файл, потом Википедия ---
+
+  function showCapitalPhoto(q, wrap) {
+    const local = `assets/capitals/${q.country.code}.jpg`;
+
+    const localImg = new Image();
+    localImg.onload = () => {
+      if (currentQuestion === q) wrap.innerHTML = `<img src="${local}" alt="Столица">`;
+    };
+    localImg.onerror = () => {
+      // локального файла нет — берём фото из Википедии
+      Capitals.getPhoto(q.country.capital).then((url) => {
+        if (currentQuestion !== q || !url) return; // иначе останется заглушка
+        const wikiImg = new Image();
+        wikiImg.onload = () => {
+          if (currentQuestion === q) wrap.innerHTML = `<img src="${url}" alt="Столица">`;
+        };
+        wikiImg.src = url;
+      });
+    };
+    localImg.src = local;
   }
 
   // --- Следующий вопрос ---

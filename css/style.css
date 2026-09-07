@@ -112,6 +112,11 @@ body {
 .game-image-wrap { width: 100%; aspect-ratio: 4/3; background: var(--bg); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
 .game-image-wrap img { width: 100%; height: 100%; object-fit: contain; }
 .game-image-placeholder { font-size: 60px; color: var(--border); }
+.game-image-wrap svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .task-label { font-size: 18px; font-weight: 700; text-align: center; color: var(--text); padding: 10px 20px; background: var(--primary-light); border-radius: 30px; }
 .answer-form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
 .answer-input-row { width: 100%; }
