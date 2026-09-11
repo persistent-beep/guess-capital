@@ -2,7 +2,7 @@
 // Service Worker — кеширование для офлайн-работы PWA
 // ============================================================
 
-const CACHE_NAME = "guess-capital-v2";
+const CACHE_NAME = "guess-capital-v3";
 const ASSETS = [
   "./",
   "./index.html",
